@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Your Quote</title>
+  <link rel="stylesheet" href="CSS/quote.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/WebCraft-logo-white.png">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <img src="assets/WebCraft-logo.png" alt="Logo" class="logo">
+    <button class="outline-btn" onclick="window.location.href='index.html'">Back to Home</button>
+  </nav>
+
+  <!-- QUOTE BUILDER SECTION -->
+  <section class="quote-builder">
+    <h1 class="quote-title">Build Your <span class="highlight">Quote</span></h1>
+
+    <!-- Category Selection -->
+    <div class="quote-section">
+      <h2>Select Category</h2>
+      <label><input type="radio" name="category" value="standard"> Standard Website</label>
+      <label><input type="radio" name="category" value="corporate"> Corporate / E-Commerce Website</label>
+    </div>
+
+    <!-- Features Selection -->
+    <div class="quote-section">
+      <h2>Select Features</h2>
+      <div id="featureList">
+        <p class="hint">Select a category first</p>
+      </div>
+    </div>
+
+    <!-- Pages Selection -->
+    <div class="quote-section">
+      <h2>Select Number of Pages</h2>
+      <select id="pageCount" class="styled-select">
+        <option value="1">1 Page</option>
+        <option value="2">2 Pages</option>
+        <option value="3">3 Pages</option>
+        <option value="4">4 Pages</option>
+        <option value="5">5 Pages</option>
+        <option value="6">6 Pages</option>
+      </select>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="quote-section">
+      <h2>Contact Information</h2>
+      <input type="text" id="clientName" placeholder="Your Name" class="styled-input">
+      <input type="email" id="clientEmail" placeholder="Your Email" class="styled-input">
+      <input type="text" id="clientPhone" placeholder="Your Phone / WhatsApp" class="styled-input">
+    </div>
+
+    <!-- Quote Summary -->
+    <div class="quote-section quote-summary">
+      <h2>Your Quote Summary</h2>
+      <p id="summaryText">No selections yet.</p>
+      <p id="totalAmount">Total: R0</p>
+    </div>
+
+    <!-- Submit Button -->
+    <button id="submitQuote" class="enquire-btn">Submit & Confirm Quote</button>
+  </section>
+
+  <!-- Popup -->
+  <div id="popup" class="popup">
+      <div class="popup-content">
+        <span id="closePopup" class="popup-close">&times;</span>
+        <div id="popupLoading">
+          <div class="spinner"></div>
+          <p>Submitting your quote...</p>
+        </div>
+        <div id="popupSuccess" style="display: none;">
+          <h2>Quote Submitted!</h2>
+          <p>Thank you for submitting your quote. Our team will contact you soon.</p>
+        </div>
+      </div>
+  </div>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/27817622557" 
+      target="_blank" 
+      class="whatsapp-float" 
+      title="Chat with us on WhatsApp">
+      <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script type="module">
+    // Firebase ES Modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIsm8XMc3SjWKwH8VgiojyvS_CMlqRoDw",
+        authDomain: "webcraft-studios-9151a.firebaseapp.com",
+        projectId: "webcraft-studios-9151a",
+        storageBucket: "webcraft-studios-9151a.firebasestorage.app",
+        messagingSenderId: "594528378771",
+        appId: "1:594528378771:web:7105d35f6472f933309266",
+        measurementId: "G-ZZHFT1YGL6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // Features & Pricing
+    const featuresData = {
+        standard: ["Social Media Links","WhatsApp Click-to-Chat","Contact Form","CMS Access","SEO Setup","Blog Section","Portfolio / Gallery"],
+        corporate: ["Social Media Links","WhatsApp Click-to-Chat","Contact Form","CMS Access","SEO Setup","Blog Section","Portfolio / Gallery","Multiple Product Pages","Payment Integration","Marketing Tools","Analytics Integration","Performance Optimization","Security Features"]
+    };
+    const basePrices = { standard: 1200, corporate: 5000 };
+    const pagePrices = { standard: 500, corporate: 1000 };
+    const featurePrices = { standard: 200, corporate: 500 };
+
+    // DOM
+    let selectedCategory = "";
+    const categoryInputs = document.querySelectorAll('input[name="category"]');
+    const featureList = document.getElementById("featureList");
+    const pageCount = document.getElementById("pageCount");
+    const summaryText = document.getElementById("summaryText");
+    const totalAmount = document.getElementById("totalAmount");
+    const submitBtn = document.getElementById("submitQuote");
+    const clientName = document.getElementById("clientName");
+    const clientEmail = document.getElementById("clientEmail");
+    const clientPhone = document.getElementById("clientPhone");
+
+    // Popup
+    const popup = document.getElementById("popup");
+    const closePopup = document.getElementById("closePopup");
+    closePopup.onclick = () => popup.style.display = "none";
+
+    // Category selection
+    categoryInputs.forEach(input => {
+      input.addEventListener("change", () => {
+        selectedCategory = input.value;
+        renderFeatures();
+        calculateTotal();
+      });
+    });
+
+    function renderFeatures() {
+      featureList.innerHTML = "";
+      if (!selectedCategory) {
+        featureList.innerHTML = `<p class="hint">Select a category first</p>`;
+        return;
+      }
+      featuresData[selectedCategory].forEach(feature => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" value="${feature}"> ${feature}`;
+        featureList.appendChild(label);
+      });
+      featureList.querySelectorAll("input[type='checkbox']").forEach(cb => cb.addEventListener("change", calculateTotal));
+    }
+
+    function calculateTotal() {
+      if (!selectedCategory) return;
+      const pages = parseInt(pageCount.value) || 1;
+      const selectedFeatures = Array.from(featureList.querySelectorAll("input[type='checkbox']:checked"));
+      const total = basePrices[selectedCategory] + (pages-1)*pagePrices[selectedCategory] + selectedFeatures.length*featurePrices[selectedCategory];
+      summaryText.innerText = `Category: ${capitalize(selectedCategory)}\nFeatures: ${selectedFeatures.map(f=>f.value).join(", ") || "None"}\nPages: ${pages}`;
+      totalAmount.innerText = `Total: R${total.toLocaleString()}`;
+    }
+
+    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+    pageCount.addEventListener("change", calculateTotal);
+
+    // Submit Quote
+    submitBtn.addEventListener("click", async () => {
+      if (!selectedCategory || !clientName.value || !clientEmail.value || !clientPhone.value) {
+        alert("Please fill in all required fields!");
+        return;
+      }
+
+      const selectedFeatures = Array.from(featureList.querySelectorAll("input[type='checkbox']:checked")).map(f => f.value);
+      const pages = parseInt(pageCount.value) || 1;
+      const total = basePrices[selectedCategory] + (pages - 1) * pagePrices[selectedCategory] + selectedFeatures.length * featurePrices[selectedCategory];
+
+      // Show popup with loading
+      popup.style.display = "flex";
+      document.getElementById("popupLoading").style.display = "block";
+      document.getElementById("popupSuccess").style.display = "none";
+
+      try {
+        await addDoc(collection(db, "quotes"), {
+          category: selectedCategory,
+          features: selectedFeatures,
+          pages,
+          total,
+          name: clientName.value,
+          email: clientEmail.value,
+          phone: clientPhone.value,
+          createdAt: serverTimestamp()
+        });
+
+        // Hide loading, show success
+        document.getElementById("popupLoading").style.display = "none";
+        document.getElementById("popupSuccess").style.display = "block";
+
+        // Reset form
+        categoryInputs.forEach(i => i.checked = false);
+        pageCount.value = 1;
+        clientName.value = "";
+        clientEmail.value = "";
+        clientPhone.value = "";
+        featureList.innerHTML = `<p class="hint">Select a category first</p>`;
+        summaryText.innerText = "";
+        totalAmount.innerText = "";
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to submit quote.");
+        popup.style.display = "none"; // hide popup if error
+      }
+    });
+  </script>
+
+</body>
+</html>

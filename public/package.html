@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Package | WebCraft Studios</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="CSS/quote.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <img src="assets/WebCraft-logo.png" class="logo">
+  <button class="outline-btn" onclick="window.location.href='index.html'">Back to Home</button>
+</nav>
+
+<!-- PACKAGE CONFIRM SECTION -->
+<section class="quote-builder">
+  <h1 class="quote-title">Confirm <span class="highlight">Package</span></h1>
+
+  <!-- PACKAGE INFO -->
+  <div class="quote-section quote-summary">
+    <h2>Selected Package</h2>
+    <p id="packageName">—</p>
+    <p id="packagePrice">—</p>
+  </div>
+
+  <div class="quote-section package-features">
+    <h3>Features Included:</h3>
+    <ul id="featureListDisplay"></ul>
+  </div>
+
+  <!-- CONTACT INFO -->
+  <div class="quote-section">
+    <h2>Your Details</h2>
+    <input type="text" id="clientName" class="styled-input" placeholder="Full Name" required>
+    <input type="email" id="clientEmail" class="styled-input" placeholder="Email Address" required>
+    <input type="text" id="clientPhone" class="styled-input" placeholder="Phone / WhatsApp" required>
+    <textarea id="notes" class="styled-input" rows="4" placeholder="Extra notes (optional)"></textarea>
+  </div>
+
+  <!-- SUBMIT -->
+  <button id="confirmPackage" class="enquire-btn">Confirm & Submit</button>
+</section>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-content">
+    <span id="closePopup" class="popup-close">&times;</span>
+
+    <div id="popupLoading">
+      <div class="spinner"></div>
+      <p>Submitting your enquiry...</p>
+    </div>
+
+    <div id="popupSuccess" style="display:none;">
+      <h2>Enquiry Sent!</h2>
+      <p>We’ll contact you shortly.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp -->
+<a href="https://wa.me/27817622557" target="_blank" class="whatsapp-float">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Email -->
+<a href="mailto:info@webcraftstudios.co.za" class="email-float" title="Email us">
+  <i class="fas fa-envelope"></i>
+</a>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCIsm8XMc3SjWKwH8VgiojyvS_CMlqRoDw",
+  authDomain: "webcraft-studios-9151a.firebaseapp.com",
+  projectId: "webcraft-studios-9151a",
+  storageBucket: "webcraft-studios-9151a.firebasestorage.app",
+  messagingSenderId: "594528378771",
+  appId: "1:594528378771:web:7105d35f6472f933309266"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* --- PACKAGE DATA --- */
+const PACKAGE_PRICES = {
+  "Starter Website": 1200,
+  "Business Website": 3000,
+  "Premium Website": 5000,
+  "Corporate Website": 8000,
+  "Starter Store": 7500,
+  "Business Store": 15000,
+  "Professional Store": 25000,
+  "Enterprise Store": 35000
+};
+
+const PACKAGE_FEATURES = {
+  "Starter Website": [
+    "1 page website with 4 sections",
+    "Free domain for 1 year",
+    "Contact Form for Enquiries",
+    "Social Media Links",
+    "WhatsApp click-to-chat integration",
+    "Easy content updates (CMS Access)",
+    "Basic on-page SEO setup"
+  ],
+  "Business Website": [
+    "3 pages (Home, About, Services)",
+    "Free domain + hosting 1 year",
+    "Contact Form",
+    "Social Media + WhatsApp integration",
+    "CMS access",
+    "Basic SEO & Mobile Optimized",
+    "Google Maps Embed"
+  ],
+  "Premium Website": [
+    "5 pages (Home, About, Services, Blog, Contact)",
+    "Free domain + hosting 1 year",
+    "Advanced contact forms",
+    "Social Media + WhatsApp integration",
+    "CMS access",
+    "SEO setup",
+    "Portfolio/Gallery showcase",
+    "Google Analytics integration",
+    "Mobile + Tablet Responsive"
+  ],
+  "Corporate Website": [
+    "8–10 pages",
+    "Free domain + hosting 1 year",
+    "Advanced forms + CRM integration",
+    "Social Media + WhatsApp integration",
+    "CMS access with training",
+    "SEO optimization + Google Analytics",
+    "Blog/Portfolio integration",
+    "Mobile, Tablet & Desktop responsive",
+    "Performance optimization & speed enhancements",
+    "Security & backup setup"
+  ],
+  "Starter Store": [
+    "Up to 10 products",
+    "Shopping cart + checkout",
+    "Payment integration (PayFast/PayPal)",
+    "Free domain + hosting 1 year",
+    "Social Media integration",
+    "CMS access for products",
+    "Basic SEO"
+  ],
+  "Business Store": [
+    "Up to 50 products",
+    "Advanced checkout options",
+    "Payment integration",
+    "Free domain + hosting 1 year",
+    "Product categories + filters",
+    "Social Media + WhatsApp integration",
+    "SEO setup + Analytics",
+    "Mobile + Tablet responsive"
+  ],
+  "Professional Store": [
+    "Up to 200 products",
+    "Advanced checkout + shipping + tax options",
+    "Payment integration (multiple gateways)",
+    "Free domain + hosting 1 year",
+    "CMS product management",
+    "Blog + Portfolio pages",
+    "Marketing tools integration",
+    "SEO + Analytics",
+    "Mobile + Tablet + Desktop responsive"
+  ],
+  "Enterprise Store": [
+    "Unlimited products",
+    "Multi-currency + multiple payment gateways",
+    "Free domain + premium hosting",
+    "Advanced product management",
+    "Marketing automation tools",
+    "Blog + Portfolio pages",
+    "SEO + Analytics + Performance optimization",
+    "Security & backups",
+    "Mobile + Tablet + Desktop responsive"
+  ]
+};
+
+/* --- GET URL PARAM --- */
+const params = new URLSearchParams(window.location.search);
+const packageName = params.get("package") || "Unknown Package";
+
+/* --- DYNAMIC PRICE & FEATURES --- */
+const price = PACKAGE_PRICES[packageName] ?? 0;
+
+document.getElementById("packageName").innerText = `Package: ${packageName}`;
+document.getElementById("packagePrice").innerText = `Price: R${price.toLocaleString()}`;
+
+const featureListDisplay = document.getElementById("featureListDisplay");
+featureListDisplay.innerHTML = "";
+
+if (PACKAGE_FEATURES[packageName]) {
+  PACKAGE_FEATURES[packageName].forEach(feature => {
+    const li = document.createElement("li");
+    li.textContent = feature;
+    featureListDisplay.appendChild(li);
+  });
+} else {
+  featureListDisplay.innerHTML = "<li>No features available for this package.</li>";
+}
+
+/* --- POPUP --- */
+const popup = document.getElementById("popup");
+const closePopup = document.getElementById("closePopup");
+closePopup.onclick = () => popup.style.display = "none";
+
+/* --- SUBMIT FORM --- */
+document.getElementById("confirmPackage").addEventListener("click", async () => {
+  const name = document.getElementById("clientName").value;
+  const email = document.getElementById("clientEmail").value;
+  const phone = document.getElementById("clientPhone").value;
+  const notes = document.getElementById("notes").value;
+
+  if (!name || !email || !phone) {
+    alert("Please complete all required fields.");
+    return;
+  }
+
+  popup.style.display = "flex";
+  document.getElementById("popupLoading").style.display = "block";
+  document.getElementById("popupSuccess").style.display = "none";
+
+  try {
+    await addDoc(collection(db, "package_enquiries"), {
+      package: packageName,
+      price,
+      name,
+      email,
+      phone,
+      notes,
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById("popupLoading").style.display = "none";
+    document.getElementById("popupSuccess").style.display = "block";
+
+    // Reset form
+    document.getElementById("clientName").value = "";
+    document.getElementById("clientEmail").value = "";
+    document.getElementById("clientPhone").value = "";
+    document.getElementById("notes").value = "";
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to submit enquiry. Please try again.");
+    popup.style.display = "none";
+  }
+});
+
+</script>
+
+<!-- Add this inside your <script type="module"> after your Firestore addDoc code -->
+<script type="module">
+import emailjs from "https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js";
+
+// Initialize EmailJS
+emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
+
+// Inside your confirmPackage click handler, after Firestore success
+try {
+  await addDoc(collection(db, "package_enquiries"), {
+    package: packageName,
+    price,
+    name,
+    email,
+    phone,
+    notes,
+    createdAt: serverTimestamp()
+  });
+
+  // EmailJS send
+  const templateParams = {
+    client_name: name,
+    client_email: email,
+    client_phone: phone,
+    package_name: packageName,
+    package_price: `R${price.toLocaleString()}`,
+    package_features: PACKAGE_FEATURES[packageName].map(f => `<li>${f}</li>`).join(""),
+    notes: notes
+  };
+
+  emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+    .then(() => {
+      console.log("Email sent successfully!");
+    }, (err) => {
+      console.error("Email failed:", err);
+    });
+
+  document.getElementById("popupLoading").style.display = "none";
+  document.getElementById("popupSuccess").style.display = "block";
+
+} catch (err) {
+  console.error(err);
+  alert("Failed to submit enquiry. Please try again.");
+  popup.style.display = "none";
+}
+</script>
+
+
+</body>
+</html>
