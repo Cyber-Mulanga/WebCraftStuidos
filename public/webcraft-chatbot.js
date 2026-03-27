@@ -1,14 +1,4 @@
-// ============================================================
-//  WebCraft Studios — AI Chat Bot Widget
-//
-//  STEP 1: Deploy server.js to Railway/Render (free tier works)
-//  STEP 2: Replace YOUR-BACKEND-URL below with your live URL
-//  STEP 3: Add to index.html before </body>:
-//          <script src="webcraft-chatbot.js"></script>
-// ============================================================
-
 (function () {
-  // UPDATE THIS with your deployed backend URL
   const API_ENDPOINT = "https://webcraft-chat.onrender.com/api/chat";
 
   const style = document.createElement("style");
@@ -34,7 +24,7 @@
     @keyframes wc-pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.3);opacity:.7;}}
     #wc-chatbox{
       position:fixed;bottom:230px;right:24px;
-      width:370px;max-height:560px;border-radius:20px;
+      width:380px;max-height:580px;border-radius:20px;
       background:#13131f;border:1px solid rgba(108,99,255,.35);
       box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.04);
       display:flex;flex-direction:column;overflow:hidden;
@@ -48,7 +38,7 @@
       padding:16px 20px;
       background:linear-gradient(135deg,#1e1b4b 0%,#0f172a 100%);
       border-bottom:1px solid rgba(108,99,255,.2);
-      display:flex;align-items:center;gap:12px;
+      display:flex;align-items:center;gap:12px;flex-shrink:0;
     }
     .wc-avatar{
       width:40px;height:40px;border-radius:50%;
@@ -69,28 +59,58 @@
     .wc-messages::-webkit-scrollbar{width:4px;}
     .wc-messages::-webkit-scrollbar-thumb{background:rgba(108,99,255,.3);border-radius:4px;}
     .wc-msg{
-      max-width:82%;padding:10px 14px;border-radius:16px;
-      font-size:13.5px;line-height:1.55;animation:wc-fadeup .3s ease;
+      max-width:90%;border-radius:16px;
+      font-size:13.5px;line-height:1.6;animation:wc-fadeup .3s ease;
+      overflow:hidden;
     }
     @keyframes wc-fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .wc-msg.bot{
-      background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);
-      color:#d4d4e8;align-self:flex-start;border-bottom-left-radius:4px;
-    }
     .wc-msg.user{
+      padding:10px 14px;
       background:linear-gradient(135deg,#6c63ff,#4f46e5);color:#fff;
       align-self:flex-end;border-bottom-right-radius:4px;
       box-shadow:0 4px 14px rgba(108,99,255,.35);
     }
+    .wc-msg.bot{
+      background:rgba(108,99,255,.10);border:1px solid rgba(108,99,255,.2);
+      color:#d4d4e8;align-self:flex-start;border-bottom-left-radius:4px;
+    }
+
+    /* ── Structured message blocks ── */
+    .wc-text { padding:10px 14px; }
+    .wc-category {
+      padding:7px 14px 4px;
+      font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:#a78bfa;
+      border-top:1px solid rgba(108,99,255,.2);
+    }
+    .wc-category:first-child { border-top:none; padding-top:10px; }
+    .wc-package {
+      display:flex;align-items:baseline;justify-content:space-between;
+      padding:5px 14px;gap:8px;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .wc-package:last-of-type { border-bottom:none; padding-bottom:10px; }
+    .wc-pkg-name { color:#d4d4e8; font-size:13px; }
+    .wc-pkg-price { color:#3ecfcf; font-weight:700; font-size:13px; white-space:nowrap; }
+    .wc-pkg-detail { color:#888; font-size:11px; margin-top:1px; }
+    .wc-pkg-left { display:flex; flex-direction:column; }
+    .wc-contact-note {
+      margin:0 10px 10px;padding:8px 12px;
+      background:rgba(62,207,207,.08);
+      border-left:2px solid #3ecfcf;
+      border-radius:0 8px 8px 0;
+      font-size:12px;color:#a5f3f3;line-height:1.6;
+    }
+
     .wc-typing{
       display:flex;gap:5px;align-items:center;padding:10px 14px;
       background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);
-      border-radius:16px;border-bottom-left-radius:4px;align-self:flex-start;
+      border-radius:16px;border-bottom-left-radius:4px;align-self:flex-start;flex-shrink:0;
     }
     .wc-typing span{width:7px;height:7px;background:#6c63ff;border-radius:50%;animation:wc-bounce .9s infinite;}
     .wc-typing span:nth-child(2){animation-delay:.15s;}.wc-typing span:nth-child(3){animation-delay:.3s;}
     @keyframes wc-bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-    .wc-quick-replies{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px;}
+    .wc-quick-replies{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px;flex-shrink:0;}
     .wc-quick-btn{
       padding:6px 12px;background:transparent;
       border:1px solid rgba(108,99,255,.45);border-radius:20px;
@@ -100,7 +120,7 @@
     .wc-quick-btn:hover{background:rgba(108,99,255,.2);border-color:#6c63ff;color:#fff;}
     .wc-input-row{
       display:flex;gap:8px;padding:12px 16px;
-      border-top:1px solid rgba(108,99,255,.15);background:rgba(255,255,255,.02);
+      border-top:1px solid rgba(108,99,255,.15);background:rgba(255,255,255,.02);flex-shrink:0;
     }
     .wc-input-row input{
       flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(108,99,255,.25);
@@ -142,8 +162,8 @@
       <div class="wc-quick-replies" id="wc-quick-replies">
         <button class="wc-quick-btn">💰 Pricing</button>
         <button class="wc-quick-btn">🌐 What do you build?</button>
-        <button class="wc-quick-btn"> ⏱ Turnaround time</button>
-        <button class="wc-quick-btn"> 📞 Contact info</button>
+        <button class="wc-quick-btn">⏱ Turnaround time</button>
+        <button class="wc-quick-btn">📞 Contact info</button>
       </div>
       <div class="wc-input-row">
         <input type="text" id="wc-input" placeholder="Ask me anything…" autocomplete="off"/>
@@ -163,80 +183,169 @@
   let isOpen = false;
   let history = [];
 
-  const SYSTEM = `You are a friendly sales assistant for WebCraft Studios, a web design company in Johannesburg, South Africa. Answer questions about the business helpfully and concisely.
+  // ── Render reply into nicely styled HTML blocks ────────────
+  function renderReply(text) {
+    const div = document.createElement("div");
+    div.className = "wc-msg bot";
 
-CONTACT: Phone/WhatsApp +27 81 762 2557 | Email info@webcraftstudios.co.za | Location: Johannesburg, SA
+    // Strip all asterisks
+    const clean = text.replace(/\*\*/g, "").replace(/\*/g, "");
+    const lines = clean.split("\n").map(l => l.trim()).filter(l => l.length > 0);
 
-SERVICES: Professional web design — standard websites, e-commerce stores, landing pages, corporate sites. Mobile-friendly, SEO-optimised, fast delivery.
+    let html = "";
+    let hasPackages = false;
 
-STANDARD PACKAGES (once-off ZAR prices):
-- Starter Website: R1,200 — 1 page, 4 sections, free domain 1yr, contact form, WhatsApp integration, basic SEO, CMS
-- Business Website: R3,000 — 3 pages, free domain + hosting 1yr, contact form, WhatsApp, CMS, SEO, Google Maps
-- Premium Website: R5,000 — 5 pages, free domain + hosting 1yr, portfolio/gallery, Google Analytics, fully responsive
-- Corporate Website: R8,000 — 8-10 pages, free domain + hosting 1yr, CRM integration, CMS training, blog, security setup
+    for (const line of lines) {
+      // Category heading (ALL CAPS line or line ending with colon)
+      if (/^[A-Z][A-Z\s&-]{4,}:?$/.test(line)) {
+        html += `<div class="wc-category">${line.replace(/:$/, "")}</div>`;
+        hasPackages = true;
+        continue;
+      }
+
+      // Package line: "- Name: R1,200 — detail" or "- Name: R1,200 (detail)"
+      const pkgMatch = line.match(/^[-•]?\s*(.+?):\s*(R[\d,]+)\s*[-—–]?\s*(.*)?$/);
+      if (pkgMatch && pkgMatch[2]) {
+        const name   = pkgMatch[1].trim();
+        const price  = pkgMatch[2].trim();
+        const detail = pkgMatch[3] ? pkgMatch[3].trim() : "";
+        html += `
+          <div class="wc-package">
+            <div class="wc-pkg-left">
+              <span class="wc-pkg-name">${name}</span>
+              ${detail ? `<span class="wc-pkg-detail">${detail}</span>` : ""}
+            </div>
+            <span class="wc-pkg-price">${price}</span>
+          </div>`;
+        hasPackages = true;
+        continue;
+      }
+
+      // Contact / note line
+      if (/whatsapp|contact|email|get started|reach us|touch/i.test(line)) {
+        html += `<div class="wc-contact-note">📲 ${line}</div>`;
+        continue;
+      }
+
+      // Plain text
+      html += `<div class="wc-text">${line}</div>`;
+    }
+
+    div.innerHTML = html;
+    return div;
+  }
+
+  const SYSTEM = `You are a friendly sales assistant for WebCraft Studios, a web design company in Johannesburg, South Africa.
+
+STRICT FORMATTING RULES — you MUST follow these exactly:
+- Never use asterisks or markdown bold/italic
+- Never use markdown symbols like ** or *
+- For category headings use plain ALL CAPS text followed by a colon, on its own line. Example: STANDARD WEBSITES:
+- For each package use this exact format on its own line: - Package Name: R0,000 — brief detail
+- Put a blank line between categories
+- End with one short sentence about contacting us on WhatsApp +27 81 762 2557
+
+CONTACT: Phone/WhatsApp +27 81 762 2557 | Email info@webcraftstudios.co.za | Johannesburg, SA
+
+STANDARD PACKAGES:
+- Starter Website: R1,200 — 1 page, free domain, WhatsApp integration, SEO
+- Business Website: R3,000 — 3 pages, free domain + hosting, Google Maps
+- Premium Website: R5,000 — 5 pages, portfolio/gallery, Google Analytics
+- Corporate Website: R8,000 — 8-10 pages, CRM integration, security setup
 
 E-COMMERCE PACKAGES:
-- Starter Store: R7,500 — up to 10 products, PayFast/PayPal, cart + checkout
-- Business Store: R15,000 — up to 50 products, product filters, advanced checkout
-- Professional Store: R25,000 — up to 200 products, multiple gateways, marketing tools
-- Enterprise Store: R35,000 — unlimited products, multi-currency, premium hosting, automation
+- Starter Store: R7,500 — up to 10 products, PayFast/PayPal
+- Business Store: R15,000 — up to 50 products, advanced checkout
+- Professional Store: R25,000 — up to 200 products, multiple gateways
+- Enterprise Store: R35,000 — unlimited products, multi-currency
 
-KEY FACTS: Turnaround 1-2 weeks. Free domain/hosting included. CMS access on all plans. WhatsApp + social media integration included. SEO built in. Post-launch support available.
+KEY FACTS: Turnaround 1-2 weeks. Free domain/hosting included. CMS access on all plans. SEO built in. Post-launch support available.
 
-Be warm and helpful. Give specific prices when asked. Keep replies to 2-4 sentences. If someone wants to get started, direct them to WhatsApp or email. Never make up services or prices.`;
+Be warm and concise. Never use markdown.`;
 
   function openChat() {
     isOpen = true;
     chatBox.classList.add("wc-visible");
     toggleBtn.classList.add("wc-open");
-    if (!messagesEl.children.length) addBot("👋 Hey there! I'm the WebCraft Assistant. Ask me anything about our packages, pricing, or turnaround times!");
+    if (!messagesEl.children.length) {
+      const d = document.createElement("div");
+      d.className = "wc-msg bot";
+      d.innerHTML = `<div class="wc-text">👋 Hey there! I'm the WebCraft Assistant. Ask me anything about our packages, pricing, or turnaround times!</div>`;
+      messagesEl.appendChild(d);
+    }
     inputEl.focus();
   }
-  function closeChat() { isOpen = false; chatBox.classList.remove("wc-visible"); toggleBtn.classList.remove("wc-open"); }
+
+  function closeChat() {
+    isOpen = false;
+    chatBox.classList.remove("wc-visible");
+    toggleBtn.classList.remove("wc-open");
+  }
 
   toggleBtn.addEventListener("click", () => isOpen ? closeChat() : openChat());
   closeBtn.addEventListener("click", closeChat);
-  quickEl.addEventListener("click", e => { if (e.target.classList.contains("wc-quick-btn")) send(e.target.textContent.replace(/^[^\w]+/,"").trim()); });
-  inputEl.addEventListener("keydown", e => { if (e.key==="Enter") send(); });
+  quickEl.addEventListener("click", e => {
+    if (e.target.classList.contains("wc-quick-btn"))
+      send(e.target.textContent.replace(/^[^\w]+/, "").trim());
+  });
+  inputEl.addEventListener("keydown", e => { if (e.key === "Enter") send(); });
   sendBtn.addEventListener("click", () => send());
 
-  function addBot(text) {
-    const d = document.createElement("div"); d.className="wc-msg bot"; d.textContent=text;
-    messagesEl.appendChild(d); messagesEl.scrollTop=messagesEl.scrollHeight;
-  }
   function addUser(text) {
-    const d = document.createElement("div"); d.className="wc-msg user"; d.textContent=text;
-    messagesEl.appendChild(d); messagesEl.scrollTop=messagesEl.scrollHeight;
-    quickEl.style.display="none";
+    const d = document.createElement("div");
+    d.className = "wc-msg user";
+    d.textContent = text;
+    messagesEl.appendChild(d);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    quickEl.style.display = "none";
   }
+
   function showTyping() {
-    const d=document.createElement("div"); d.className="wc-typing"; d.id="wc-typing";
-    d.innerHTML="<span></span><span></span><span></span>";
-    messagesEl.appendChild(d); messagesEl.scrollTop=messagesEl.scrollHeight;
+    const d = document.createElement("div");
+    d.className = "wc-typing"; d.id = "wc-typing";
+    d.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(d);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
-  function hideTyping() { const d=document.getElementById("wc-typing"); if(d) d.remove(); }
+
+  function hideTyping() {
+    const d = document.getElementById("wc-typing");
+    if (d) d.remove();
+  }
 
   async function send(text) {
-    const msg = (text||inputEl.value).trim(); if(!msg) return;
-    inputEl.value=""; addUser(msg);
-    history.push({role:"user", content:msg});
-    showTyping(); sendBtn.disabled=true; inputEl.disabled=true;
+    const msg = (text || inputEl.value).trim();
+    if (!msg) return;
+    inputEl.value = "";
+    addUser(msg);
+    history.push({ role: "user", content: msg });
+    showTyping();
+    sendBtn.disabled = true;
+    inputEl.disabled = true;
 
     try {
       const res = await fetch(API_ENDPOINT, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({system:SYSTEM, messages:history})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ system: SYSTEM, messages: history })
       });
       const data = await res.json();
       const reply = data?.reply || "Sorry, I couldn't respond. Please WhatsApp us at +27 81 762 2557!";
-      history.push({role:"assistant", content:reply});
-      hideTyping(); addBot(reply);
-    } catch(e) {
+      history.push({ role: "assistant", content: reply });
       hideTyping();
-      addBot("Oops! Please WhatsApp us at +27 81 762 2557 or email info@webcraftstudios.co.za.");
+      const bubble = renderReply(reply);
+      messagesEl.appendChild(bubble);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    } catch (e) {
+      hideTyping();
+      const d = document.createElement("div");
+      d.className = "wc-msg bot";
+      d.innerHTML = `<div class="wc-contact-note">📲 Please WhatsApp us at +27 81 762 2557 or email info@webcraftstudios.co.za</div>`;
+      messagesEl.appendChild(d);
     }
 
-    sendBtn.disabled=false; inputEl.disabled=false; inputEl.focus();
+    sendBtn.disabled = false;
+    inputEl.disabled = false;
+    inputEl.focus();
   }
 })();
