@@ -4,7 +4,7 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 app.post("/api/chat", async (req, res) => {
@@ -36,14 +36,14 @@ app.post("/api/chat", async (req, res) => {
     const reply = data?.content?.[0]?.text;
 
     if (!reply) {
-      console.error("Anthropic error:", data);
-      return res.status(500).json({ error: "No reply from Claude" });
+      console.error("Anthropic error:", JSON.stringify(data));
+      return res.status(500).json({ error: "No reply from Claude", details: data });
     }
 
     res.json({ reply });
   } catch (err) {
     console.error("Server error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", message: err.message });
   }
 });
 
