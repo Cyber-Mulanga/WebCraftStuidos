@@ -9,7 +9,7 @@
 
 (function () {
   // ⚠️ UPDATE THIS with your deployed backend URL
-  const API_ENDPOINT = "https://YOUR-BACKEND-URL.com/api/chat";
+  const API_ENDPOINT = "https://webcraft-chat.onrender.com/api/chat";
 
   const style = document.createElement("style");
   style.textContent = `
