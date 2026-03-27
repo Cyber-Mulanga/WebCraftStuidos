@@ -8,7 +8,7 @@
 // ============================================================
 
 (function () {
-  // ⚠️ UPDATE THIS with your deployed backend URL
+  // UPDATE THIS with your deployed backend URL
   const API_ENDPOINT = "https://webcraft-chat.onrender.com/api/chat";
 
   const style = document.createElement("style");
@@ -142,8 +142,8 @@
       <div class="wc-quick-replies" id="wc-quick-replies">
         <button class="wc-quick-btn">💰 Pricing</button>
         <button class="wc-quick-btn">🌐 What do you build?</button>
-        <button class="wc-quick-btn">⏱ Turnaround time</button>
-        <button class="wc-quick-btn">📞 Contact info</button>
+        <button class="wc-quick-btn"> ⏱ Turnaround time</button>
+        <button class="wc-quick-btn"> 📞 Contact info</button>
       </div>
       <div class="wc-input-row">
         <input type="text" id="wc-input" placeholder="Ask me anything…" autocomplete="off"/>
